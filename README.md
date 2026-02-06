@@ -1,37 +1,41 @@
-# Birthday Email Agent
+🎂 Birthday Email Agent
 
-An autonomous birthday notification agent that runs daily, identifies employees whose birthday is on the current date, and generates personalized birthday messages.
+An autonomous Python-based birthday notification agent that runs daily, identifies employees whose birthday is today, and sends personalized birthday emails.
 
-The project is intentionally designed to be **clean, portable, robust, and testable**, with email delivery simulated and abstracted for future production integration.
-
----
-
-## Key Features
-
-* Runs as a **daily autonomous agent**
-* Fetches only employees whose birthday is **today**
-* Generates **personalized, professional birthday messages**
-* Designed with **clear separation of concerns**
-* Robust error handling and structured logging
-* OS-agnostic and portable (no hardcoded paths)
-* Email delivery abstracted for easy future integration (SMTP / third-party services)
+The project is designed to be **safe by default**, **easy to use**, and **production-ready**, with real SMTP email support that can be enabled via configuration.
 
 ---
 
-## Architecture Overview
+## ✅ What This Agent Does
 
-The system is structured into clear layers:
+* Runs once per day (manual or scheduler/cron)
+* Reads employee data from CSV → SQLite
+* Finds employees whose birthday is **today**
+* Generates personalized birthday emails
+* Supports:
+
+  * **Console mode** (safe / dry run)
+  * **SMTP mode** (real email sending via Gmail)
+
+---
+
+## 🧱 High-Level Design
+
+The system is cleanly separated into layers:
 
 * **Repository layer**
-  Handles all data access (SQLite) and is isolated from business logic.
+  Handles all database access (SQLite).
 
 * **Business logic layer**
-  Pure functions for message generation (fully testable, no side effects).
+  Pure, testable functions for email content generation.
+
+* **Delivery layer**
+  Console output or real SMTP email sending.
 
 * **Orchestration layer**
-  Coordinates execution, logging, and delivery.
+  Coordinates the daily agent run with logging and safety checks.
 
-This design allows easy extension, testing, and maintenance without changing core logic.
+This makes the system easy to test, maintain, and extend.
 
 ---
 
@@ -40,16 +44,17 @@ This design allows easy extension, testing, and maintenance without changing cor
 ```
 birthday-email-agent/
 ├── src/
-│   ├── birthday_agent.py     # Orchestration & delivery logic
-│   ├── repository.py         # Data access layer
-│   ├── config.py             # Centralized configuration & paths
+│   ├── birthday_agent.py     # Main agent runner
+│   ├── repository.py         # Database access
+│   ├── email_sender.py       # SMTP email sender
+│   ├── config.py             # Central configuration
 │   └── __init__.py
 │
 ├── data/
-│   └── test_employees.csv    # Input employee data (CSV)
+│   └── test_employees.csv    # Employee data
 │
 ├── logs/
-│   └── (created at runtime)  # Runtime logs (ignored by Git)
+│   └── (created at runtime)  # Execution logs
 │
 ├── requirements.txt
 └── README.md
@@ -57,32 +62,18 @@ birthday-email-agent/
 
 ---
 
-## ⚙️ Configuration
-
-All paths and constants are centrally managed in:
-
-```
-src/config.py
-```
-
-This ensures:
-
-* no hardcoded OS-specific paths
-* easy portability across environments
-* clean separation between configuration and logic
-
----
-
-## ▶️ How to Run
+## ⚙️ Setup & Usage
 
 ### 1️⃣ Prerequisites
 
 * Python 3.9+
-* No external dependencies required
+* Internet connection (only for SMTP mode)
 
-### 2️⃣ Prepare data
+---
 
-Update employee records in:
+### 2️⃣ Prepare employee data
+
+Edit:
 
 ```
 data/test_employees.csv
@@ -96,7 +87,7 @@ Required columns:
 
 ---
 
-### 3️⃣ Initialize the database
+### 3️⃣ Initialize database
 
 From the project root:
 
@@ -108,59 +99,110 @@ This creates a local SQLite database from the CSV.
 
 ---
 
-### 4️⃣ Run the agent
+## ▶️ Running the Agent (IMPORTANT)
+
+### 🔹 Default Mode: Console (Safe)
+
+By default, the agent runs in **console mode**.
+
+In `src/config.py`:
+
+```python
+EMAIL_MODE = "console"
+```
+
+Run:
 
 ```bash
 python -m src.birthday_agent
 ```
 
-Output:
+Result:
 
-* Birthday messages printed to console
-* Execution details logged to `logs/agent.log`
-
----
-
-## 🛡️ Robustness & Error Handling
-
-The agent is designed to **fail gracefully**:
-
-* Missing or empty CSV files are detected early
-* Database errors are logged with stack traces
-* The agent never crashes silently
-* Safe to run via scheduler / cron jobs
+* Emails are **printed to the terminal**
+* No real emails are sent
+* Safe for testing and demos
 
 ---
 
-## 📬 Email Delivery (Design Choice)
+## ✉️ Enabling Real Email Sending (SMTP)
 
-Actual email delivery is **intentionally simulated**.
+SMTP is **already implemented and tested**, but disabled by default.
 
-Reason:
+### Step 1️⃣ Generate Gmail App Password
 
-* Real email delivery introduces security, credentials, retries, and monitoring concerns.
-* The system is architected so email delivery can be added later **without changing core logic**.
-
-Supported future extensions:
-
-* SMTP
-* Company email services
-* Third-party providers (e.g. SendGrid, SES)
+* Enable 2-Step Verification on your Google account
+* Generate an **App Password** for Mail
 
 ---
 
-## 🧪 Testability
+### Step 2️⃣ Set environment variables (Windows PowerShell)
 
-* Business logic is implemented as **pure functions**
-* Data access is isolated behind a repository layer
-* Components can be unit tested independently without a real database or email service
+```powershell
+setx SMTP_USERNAME "yourgmail@gmail.com"
+setx SMTP_PASSWORD "your_app_password"
+```
+
+Restart the terminal after this.
 
 ---
 
-Future Enhancements
+### Step 3️⃣ Switch to SMTP mode
 
-* Add real email delivery via SMTP or third-party service
-* Introduce unit tests for business logic
-* Add retry and alerting mechanisms
-* Package as a standalone executable
+In `src/config.py`, change:
 
+```python
+EMAIL_MODE = "smtp"
+```
+
+⚠️ This is the **only change required** to enable real emails.
+
+---
+
+### Step 4️⃣ Run the agent
+
+```bash
+python -m src.birthday_agent
+```
+
+Result:
+
+* Real birthday emails are sent via Gmail SMTP
+* One email per user
+* Failures are logged safely
+
+---
+
+## 🛡️ Safety & Best Practices
+
+* SMTP credentials are **never committed** to GitHub
+* Console mode is the default
+* Real emails are enabled only via config
+* Recommended:
+
+  * Test SMTP with your own email first
+  * Use console mode when making changes
+
+---
+
+## 🧪 Logging & Error Handling
+
+* All runs are logged to:
+
+  ```
+  logs/agent.log
+  ```
+* Failures are handled gracefully
+* Safe to run via Task Scheduler / cron
+
+---
+
+## 🚀 Future Enhancements
+
+* SMTP retry & alerting
+* Email domain allow-list
+* Dry-run + test override mode
+* Scheduler integration
+* Unit tests
+
+---
