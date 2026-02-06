@@ -4,30 +4,26 @@ from src.config import LOG_PATH
 from src.repository import BirthdayRepository
 from src.config import COMPANY_NAME
 
+#Email (SMTP)
+from src.config import EMAIL_MODE
+from src.email_sender import SmtpEmailSender
 
 
 def setup_logging():
     logging.basicConfig(
-        filename = LOG_PATH,
+        filename=LOG_PATH,
         level=logging.INFO,
         format="%(asctime)s | %(levelname)s | %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S"
     )
 
 
-<<<<<<< HEAD
-# Business logic (testable)
+# ✅ Pure business logic (testable)
 def build_birthday_message(name):
     subject = f"Happy Birthday from {COMPANY_NAME}"
-=======
-
-# business logic only, keep this clean-ish
-def build_birthday_message(userName):
-    subject=f"Happy Birthday from {COMPANY_NAME}"
->>>>>>> 1463bb0 (Refactor project structure and improve robustness based on review feedback)
 
     body = f"""
-Dear {userName},
+Dear {name},
 
 Wishing you a very Happy Birthday!
 
@@ -38,27 +34,25 @@ Warm regards,
 {COMPANY_NAME}
 Human Resources
 """
-    return subject , body
+    return subject, body
 
 
-<<<<<<< HEAD
-# Side effects only (delivery simulation)
+# ✅ Delivery logic (console OR SMTP)
 def send_individual_email(name, email):
-=======
-
-# side effects + printing junk
-def send_individual_email(name,email):
->>>>>>> 1463bb0 (Refactor project structure and improve robustness based on review feedback)
     subject, body = build_birthday_message(name)
 
-    logging.info(f"Birthday email sent to {name} <{email}>")
+    if EMAIL_MODE == "smtp":
+        sender = SmtpEmailSender()
+        sender.send(email, subject, body)
+        print(f"Email sent to {email}")
+    else:
+        print("----- EMAIL SENT (SIMULATED) -----")
+        print(f"To      : {email}")
+        print(f"Subject : {subject}")
+        print(body)
+        print("---------------------------------\n")
 
-    print("----- EMAIL SENT (SIMULATED) -----")
-    print(f"To      : {email}")
-    print(f"Subject : {subject}")
-    print(body)
-    print("---------------------------------\n")
-
+    logging.info(f"Birthday email processed for {name} <{email}>")
 
 
 def run_agent():
@@ -66,27 +60,25 @@ def run_agent():
         setup_logging()
         logging.info("Daily birthday agent run started")
 
-        repo = BirthdayRepository()
-        tempUserList = repo.get_birthdays_for_today()
+        repository = BirthdayRepository()
+        rows = repository.get_birthdays_for_today()
 
-        if not tempUserList:
+        if not rows:
             logging.info("No birthdays today")
             print("No birthdays today.")
             return
 
-        logging.info(f"{len(tempUserList)} birthday(s) found today")
-        print(f"Found {len(tempUserList)} birthday(s) today.\n")
+        logging.info(f"{len(rows)} birthday(s) found today")
+        print(f"Found {len(rows)} birthday(s) today.\n")
 
-        for name , email in tempUserList:
-            send_individual_email(name,email)
+        for name, email in rows:
+            send_individual_email(name, email)
 
         logging.info("Daily birthday agent run completed successfully")
 
     except Exception:
-        #this is broad, but it's fine for now
         logging.exception("Agent run failed unexpectedly")
         print("Agent failed. Check logs for details.")
-
 
 
 if __name__ == "__main__":
