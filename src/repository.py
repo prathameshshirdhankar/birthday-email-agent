@@ -5,9 +5,11 @@ import logging
 from src.config import DB_PATH
 
 
+
 class BirthdayRepository:
+
     def get_birthdays_for_today(self):
-        today = datetime.today().strftime("%m-%d")
+        todayStr = datetime.today().strftime("%m-%d")
 
         query = """
             SELECT name, email
@@ -17,9 +19,10 @@ class BirthdayRepository:
 
         try:
             with sqlite3.connect(DB_PATH) as conn:
-                cursor = conn.cursor()
-                cursor.execute(query, (today,))
+                cursor=conn.cursor()
+                cursor.execute(query,(todayStr,))
                 return cursor.fetchall()
-        except sqlite3.Error as e:
-            logging.error(f"Database error: {e}")
+
+        except sqlite3.Error as err:
+            logging.error(f"Database error: {err}")
             return []

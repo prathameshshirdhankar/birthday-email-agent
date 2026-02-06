@@ -1,17 +1,19 @@
 from pathlib import Path
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+
+BASE_DIR=Path(__file__).resolve().parent.parent
 
 DATA_DIR = BASE_DIR / "data"
-LOG_DIR = BASE_DIR / "logs"
+LOG_DIR=BASE_DIR / "logs"
 
-DB_PATH = DATA_DIR / "employees.db"
+DB_PATH=DATA_DIR / "employees.db"
 CSV_PATH = DATA_DIR / "test_employees.csv"
-LOG_PATH = LOG_DIR / "agent.log"
+LOG_PATH=LOG_DIR / "agent.log"
 
-COMPANY_NAME = "TestOrg"
+COMPANY_NAME="TestOrg"
 
 
-# Ensure required directories exist
+
+# make sure folders exist so things don't blow up
 DATA_DIR.mkdir(exist_ok=True)
 LOG_DIR.mkdir(exist_ok=True)
