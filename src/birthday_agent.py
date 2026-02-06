@@ -14,7 +14,7 @@ def setup_logging():
     )
 
 
-# ✅ Pure business logic (testable)
+# Business logic (testable)
 def build_birthday_message(name):
     subject = f"Happy Birthday from {COMPANY_NAME}"
 
@@ -33,7 +33,7 @@ Human Resources
     return subject, body
 
 
-# ✅ Side effects only (delivery simulation)
+# Side effects only (delivery simulation)
 def send_individual_email(name, email):
     subject, body = build_birthday_message(name)
 
