@@ -129,49 +129,182 @@ Result:
 
 SMTP is **already implemented and tested**, but disabled by default.
 
-### Step 1️⃣ Generate Gmail App Password
 
-* Enable 2-Step Verification on your Google account
-* Generate an **App Password** for Mail
+
+# ✉️ Enabling Real Email Sending (SMTP – Gmail)
+
+SMTP support is fully implemented but disabled by default.
+
+Follow these steps carefully.
 
 ---
 
-### Step 2️⃣ Set environment variables (Windows PowerShell)
+## 1️⃣ Enable 2-Step Verification
+
+1. Go to your Google Account → **Security**
+2. Enable **2-Step Verification**
+
+⚠️ Required before generating App Passwords.
+
+---
+
+## 2️⃣ Generate a Gmail App Password
+
+1. Go to **Google Account → Security → App passwords**
+2. Select:
+
+   * **App:** Mail
+   * **Device:** Windows Computer (or Other)
+3. Click **Generate**
+4. Google will display a 16-character password
+
+Example:
+
+```
+abcd efgh ijkl mnop
+```
+
+Copy this password (Ctrl + C).
+You will not see it again.
+
+---
+
+## 3️⃣ Open PowerShell in the Project Root Directory
+
+Navigate to your project folder (the folder containing `src/`, `data/`, etc.).
+
+Example structure:
+
+```
+birthday-email-agent/
+├── src/
+├── data/
+├── logs/
+```
+
+### Option A (Recommended)
+
+1. Open File Explorer
+2. Go to the `birthday-email-agent` folder
+3. Click the address bar
+4. Type:
+
+```
+powershell
+```
+
+5. Press Enter
+
+PowerShell will open **inside that directory**.
+
+---
+
+### Option B (Manual Navigation)
+
+Open PowerShell normally, then run:
+
+```powershell
+cd path\to\birthday-email-agent
+```
+
+Example:
+
+```powershell
+cd C:\Users\YourName\Documents\birthday-email-agent
+```
+
+---
+
+## 4️⃣ Set Environment Variables
+
+In PowerShell (inside the project directory), run:
 
 ```powershell
 setx SMTP_USERNAME "yourgmail@gmail.com"
-setx SMTP_PASSWORD "your_app_password"
 ```
 
-Restart the terminal after this.
+Press Enter.
+
+Then run:
+
+```powershell
+setx SMTP_PASSWORD "PASTE_YOUR_APP_PASSWORD_HERE"
+```
+
+Now:
+
+* Delete `PASTE_YOUR_APP_PASSWORD_HERE`
+* Press **Ctrl + V** to paste your copied App Password
+* Press Enter
+
+Example:
+
+```powershell
+setx SMTP_PASSWORD "abcdefghijklmnop"
+```
+
+You should see:
+
+```
+SUCCESS: Specified value was saved.
+```
+
+⚠️ Important:
+
+* Use the App Password (NOT your real Gmail password)
+* Do not add extra spaces
+* Do not hardcode credentials in Python files
 
 ---
 
-### Step 3️⃣ Switch to SMTP mode
+## 5️⃣ Restart PowerShell
 
-In `src/config.py`, change:
+Close PowerShell completely.
+Open a new PowerShell window.
+
+Environment variables will not load until restarted.
+
+---
+
+## 6️⃣ Enable SMTP Mode
+
+Open:
+
+```
+src/config.py
+```
+
+Change:
+
+```python
+EMAIL_MODE = "console"
+```
+
+To:
 
 ```python
 EMAIL_MODE = "smtp"
 ```
 
-⚠️ This is the **only change required** to enable real emails.
-
 ---
 
-### Step 4️⃣ Run the agent
+## 7️⃣ Run the Agent
 
-```bash
+From the project root directory:
+
+```powershell
 python -m src.birthday_agent
 ```
 
-Result:
+If configured correctly:
 
-* Real birthday emails are sent via Gmail SMTP
-* One email per user
-* Failures are logged safely
+* Real birthday emails will be sent
+* One email per matching employee
+* Errors are logged in `logs/agent.log`
 
 ---
+
+
 
 ## 🛡️ Safety & Best Practices
 
