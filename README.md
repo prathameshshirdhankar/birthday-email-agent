@@ -1,21 +1,22 @@
-🎂 Birthday Email Agent
+# 🎂 Birthday Email Agent
 
 An autonomous Python-based birthday notification agent that runs daily, identifies employees whose birthday is today, and sends personalized birthday emails.
 
-The project is designed to be **safe by default**, **easy to use**, and **production-ready**, with real SMTP email support that can be enabled via configuration.
+The project is designed to be **safe by default**, easy to use, and production-ready, with real SMTP email support that can be enabled via configuration.
 
 ---
 
 ## ✅ What This Agent Does
 
-* Runs once per day (manual or scheduler/cron)
+* Runs once per day (manual or via scheduler/cron)
 * Reads employee data from CSV → SQLite
-* Finds employees whose birthday is **today**
+* Finds employees whose birthday is today
 * Generates personalized birthday emails
-* Supports:
 
-  * **Console mode** (safe / dry run)
-  * **SMTP mode** (real email sending via Gmail)
+Supports:
+
+* **Console mode** (safe / dry run)
+* **SMTP mode** (real email sending via Gmail)
 
 ---
 
@@ -23,19 +24,12 @@ The project is designed to be **safe by default**, **easy to use**, and **produc
 
 The system is cleanly separated into layers:
 
-* **Repository layer**
-  Handles all database access (SQLite).
+* **Repository layer** – Handles all database access (SQLite)
+* **Business logic layer** – Pure, testable functions for email content generation
+* **Delivery layer** – Console output or real SMTP email sending
+* **Orchestration layer** – Coordinates the daily agent run with logging and safety checks
 
-* **Business logic layer**
-  Pure, testable functions for email content generation.
-
-* **Delivery layer**
-  Console output or real SMTP email sending.
-
-* **Orchestration layer**
-  Coordinates the daily agent run with logging and safety checks.
-
-This makes the system easy to test, maintain, and extend.
+This design makes the system easy to test, maintain, and extend.
 
 ---
 
@@ -48,6 +42,7 @@ birthday-email-agent/
 │   ├── repository.py         # Database access
 │   ├── email_sender.py       # SMTP email sender
 │   ├── config.py             # Central configuration
+│   ├── init_db.py            # CSV → SQLite initializer
 │   └── __init__.py
 │
 ├── data/
@@ -60,150 +55,22 @@ birthday-email-agent/
 └── README.md
 ```
 
+> Note: The SQLite database file is generated locally and should not be committed to version control.
+
 ---
 
-## ⚙️ Setup & Usage
+# ⚙️ Setup & Usage
 
-### 1️⃣ Prerequisites
+---
+
+## 1️⃣ Prerequisites
 
 * Python 3.9+
-* Internet connection (only for SMTP mode)
+* Internet connection (only required for SMTP mode)
 
 ---
 
-
-# 🗄️ Database Configuration (Important)
-
-This project uses a local **SQLite database** generated from a CSV file.
-
-⚠️ The provided example database and CSV contain test data.
-You should use your own employee dataset before enabling SMTP mode.
-
----
-
-## How the Database Works
-
-1. Employee data is stored in:
-
-```
-data/test_employees.csv
-```
-
-2. The database is generated from this CSV file:
-
-```bash
-python -m src.init_db
-```
-
-3. This creates a local SQLite database file (e.g., `employees.db`).
-
----
-
-## ✅ Use Your Own Employee Data
-
-Before running in SMTP mode:
-
-1. Open:
-
-```
-data/test_employees.csv
-```
-
-2. Replace the example data with your own:
-
-Required columns:
-
-```
-name,email,date_of_birth
-```
-
-Example:
-
-```
-Jane Doe,jane.doe@yourcompany.com,1992-04-15
-John Smith,john.smith@yourcompany.com,1988-11-02
-```
-
-3. Rebuild the database:
-
-```bash
-python -m src.init_db
-```
-
-This ensures:
-
-* The SQLite database reflects your employee list
-* Emails are sent to your intended recipients
-* No test emails are accidentally triggered
-
----
-
-## 🔐 Important Safety Note
-
-If you do not replace the sample data:
-
-* The agent may send emails to example/test addresses
-* This could result in unintended email delivery
-
-Always verify your CSV before enabling:
-
-```python
-EMAIL_MODE = "smtp"
-```
-
----
-
-## 💡 Recommended Practice
-
-* Use console mode first:
-
-```python
-EMAIL_MODE = "console"
-```
-
-* Verify correct recipients are printed
-* Then switch to SMTP mode
-
----
-
-# Optional Improvement (Highly Recommended)
-
-You should **not commit `employees.db` to GitHub**.
-
-Add this to your `.gitignore`:
-
-```
-*.db
-```
-
-That way:
-
-* Each user generates their own database locally
-* No personal data is stored in the repository
-* The project looks more professional
-
----
-
-# Even Better (If You Want It Cleaner)
-
-Instead of shipping a real DB, you can:
-
-* Delete `employees.db` from the repo
-* Keep only:
-
-  * `data/test_employees.csv`
-* Add a note:
-
-  > “Database file is generated locally and not included in version control.”
-
-That’s how production tools handle this.
-
----
-
-
-
-
-### 2️⃣ Prepare employee data
+## 2️⃣ Prepare Employee Data
 
 Edit:
 
@@ -215,29 +82,49 @@ Required columns:
 
 * `name`
 * `email`
-* `date_of_birth` (YYYY-MM-DD)
+* `date_of_birth` (format: `YYYY-MM-DD`)
+
+Example:
+
+```
+name,email,date_of_birth
+Jane Doe,jane.doe@company.com,1992-04-15
+John Smith,john.smith@company.com,1988-11-02
+```
+
+⚠️ Replace sample data with your own before enabling SMTP mode.
 
 ---
 
-### 3️⃣ Initialize database
+## 3️⃣ Initialize Database
 
-From the project root:
+From the project root directory:
 
 ```bash
 python -m src.init_db
 ```
 
-This creates a local SQLite database from the CSV.
+This creates a local SQLite database from the CSV file.
+
+Each user should generate their own database locally.
 
 ---
 
-## ▶️ Running the Agent (IMPORTANT)
+# ▶️ Running the Agent (IMPORTANT)
 
-### 🔹 Default Mode: Console (Safe)
+---
 
-By default, the agent runs in **console mode**.
+## 🔹 Default Mode: Console (Safe Mode)
 
-In `src/config.py`:
+By default, the agent runs in console mode.
+
+In:
+
+```
+src/config.py
+```
+
+Ensure:
 
 ```python
 EMAIL_MODE = "console"
@@ -251,17 +138,11 @@ python -m src.birthday_agent
 
 Result:
 
-* Emails are **printed to the terminal**
+* Emails are printed to the terminal
 * No real emails are sent
-* Safe for testing and demos
+* Safe for testing and development
 
 ---
-
-## ✉️ Enabling Real Email Sending (SMTP)
-
-SMTP is **already implemented and tested**, but disabled by default.
-
-
 
 # ✉️ Enabling Real Email Sending (SMTP – Gmail)
 
@@ -288,9 +169,8 @@ Follow these steps carefully.
    * **App:** Mail
    * **Device:** Windows Computer (or Other)
 3. Click **Generate**
-4. Google will display a 16-character password
 
-Example:
+Google will display a 16-character password:
 
 ```
 abcd efgh ijkl mnop
@@ -305,15 +185,6 @@ You will not see it again.
 
 Navigate to your project folder (the folder containing `src/`, `data/`, etc.).
 
-Example structure:
-
-```
-birthday-email-agent/
-├── src/
-├── data/
-├── logs/
-```
-
 ### Option A (Recommended)
 
 1. Open File Explorer
@@ -327,7 +198,7 @@ powershell
 
 5. Press Enter
 
-PowerShell will open **inside that directory**.
+PowerShell will open inside that directory.
 
 ---
 
@@ -349,7 +220,7 @@ cd C:\Users\YourName\Documents\birthday-email-agent
 
 ## 4️⃣ Set Environment Variables
 
-In PowerShell (inside the project directory), run:
+In PowerShell, run:
 
 ```powershell
 setx SMTP_USERNAME "yourgmail@gmail.com"
@@ -384,7 +255,7 @@ SUCCESS: Specified value was saved.
 ⚠️ Important:
 
 * Use the App Password (NOT your real Gmail password)
-* Do not add extra spaces
+* Do not include extra spaces
 * Do not hardcode credentials in Python files
 
 ---
@@ -392,7 +263,7 @@ SUCCESS: Specified value was saved.
 ## 5️⃣ Restart PowerShell
 
 Close PowerShell completely.
-Open a new PowerShell window.
+Open a new terminal window.
 
 Environment variables will not load until restarted.
 
@@ -424,7 +295,7 @@ EMAIL_MODE = "smtp"
 
 From the project root directory:
 
-```powershell
+```bash
 python -m src.birthday_agent
 ```
 
@@ -436,38 +307,41 @@ If configured correctly:
 
 ---
 
+# 🛡️ Safety & Best Practices
 
-
-## 🛡️ Safety & Best Practices
-
-* SMTP credentials are **never committed** to GitHub
+* SMTP credentials are never committed to GitHub
 * Console mode is the default
-* Real emails are enabled only via config
-* Recommended:
+* Real emails are enabled only via configuration
+* Database files should not be committed to version control
 
-  * Test SMTP with your own email first
-  * Use console mode when making changes
+Recommended workflow:
+
+1. Develop and test in console mode
+2. Verify correct recipients
+3. Switch to SMTP mode only after validation
 
 ---
 
-## 🧪 Logging & Error Handling
+# 🧪 Logging & Error Handling
 
-* All runs are logged to:
+All runs are logged to:
 
-  ```
-  logs/agent.log
-  ```
+```
+logs/agent.log
+```
+
 * Failures are handled gracefully
-* Safe to run via Task Scheduler / cron
+* Safe to run via Task Scheduler or cron
+* Suitable for daily automated execution
 
 ---
 
-## 🚀 Future Enhancements
+# 🚀 Future Enhancements
 
 * SMTP retry & alerting
 * Email domain allow-list
 * Dry-run + test override mode
-* Scheduler integration
+* Scheduler integration examples
 * Unit tests
 
 ---
