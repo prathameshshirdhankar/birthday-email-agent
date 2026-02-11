@@ -71,6 +71,138 @@ birthday-email-agent/
 
 ---
 
+
+# 🗄️ Database Configuration (Important)
+
+This project uses a local **SQLite database** generated from a CSV file.
+
+⚠️ The provided example database and CSV contain test data.
+You should use your own employee dataset before enabling SMTP mode.
+
+---
+
+## How the Database Works
+
+1. Employee data is stored in:
+
+```
+data/test_employees.csv
+```
+
+2. The database is generated from this CSV file:
+
+```bash
+python -m src.init_db
+```
+
+3. This creates a local SQLite database file (e.g., `employees.db`).
+
+---
+
+## ✅ Use Your Own Employee Data
+
+Before running in SMTP mode:
+
+1. Open:
+
+```
+data/test_employees.csv
+```
+
+2. Replace the example data with your own:
+
+Required columns:
+
+```
+name,email,date_of_birth
+```
+
+Example:
+
+```
+Jane Doe,jane.doe@yourcompany.com,1992-04-15
+John Smith,john.smith@yourcompany.com,1988-11-02
+```
+
+3. Rebuild the database:
+
+```bash
+python -m src.init_db
+```
+
+This ensures:
+
+* The SQLite database reflects your employee list
+* Emails are sent to your intended recipients
+* No test emails are accidentally triggered
+
+---
+
+## 🔐 Important Safety Note
+
+If you do not replace the sample data:
+
+* The agent may send emails to example/test addresses
+* This could result in unintended email delivery
+
+Always verify your CSV before enabling:
+
+```python
+EMAIL_MODE = "smtp"
+```
+
+---
+
+## 💡 Recommended Practice
+
+* Use console mode first:
+
+```python
+EMAIL_MODE = "console"
+```
+
+* Verify correct recipients are printed
+* Then switch to SMTP mode
+
+---
+
+# Optional Improvement (Highly Recommended)
+
+You should **not commit `employees.db` to GitHub**.
+
+Add this to your `.gitignore`:
+
+```
+*.db
+```
+
+That way:
+
+* Each user generates their own database locally
+* No personal data is stored in the repository
+* The project looks more professional
+
+---
+
+# Even Better (If You Want It Cleaner)
+
+Instead of shipping a real DB, you can:
+
+* Delete `employees.db` from the repo
+* Keep only:
+
+  * `data/test_employees.csv`
+* Add a note:
+
+  > “Database file is generated locally and not included in version control.”
+
+That’s how production tools handle this.
+
+---
+
+
+
+
 ### 2️⃣ Prepare employee data
 
 Edit:
